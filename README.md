@@ -1,4 +1,4 @@
 3D Object Detection and Attribute Prediction 
 
-# Authors:
+## Authors:
 Yuqing Qin, Feng(Jason) Xiang, Jingxiang Lin
