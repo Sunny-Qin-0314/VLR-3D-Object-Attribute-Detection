@@ -1,1 +1,4 @@
-# VLR-3D-Object-Attribute-Detection
+3D Object Detection and Attribute Prediction 
+
+# Authors:
+Yuqing Qin, Feng(Jason) Xiang, Jingxiang Lin
