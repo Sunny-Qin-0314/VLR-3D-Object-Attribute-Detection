@@ -220,7 +220,7 @@ def _fill_trainval_infos(nusc,
                 nusc.get('sample_annotation', token)
                 for token in sample['anns']
             ]
-            # Feng Xiang
+            # Feng Xiang code
             # code begin
             attr_list = []
             for i in annotations:
