@@ -97,9 +97,12 @@ class NuScenesDataset(Custom3DDataset):
         'vehicle.parked',
         'vehicle.stopped',
     ]
-    CLASSES = ('car', 'truck', 'trailer', 'bus', 'construction_vehicle',
-               'bicycle', 'motorcycle', 'pedestrian', 'traffic_cone',
-               'barrier') # remove traffic cone and barrier 
+    # CLASSES = ('car', 'truck', 'trailer', 'bus', 'construction_vehicle',
+    #            'bicycle', 'motorcycle', 'pedestrian', 'traffic_cone',
+    #            'barrier')
+
+    CLASSES = ('car', 'truck', 'construction_vehicle', 'bus', 'trailer', 'barrier', 'motorcycle', 'bicycle', 'pedestrian', 'traffic_cone')
+
 
     def __init__(self,
                  ann_file,
@@ -114,6 +117,16 @@ class NuScenesDataset(Custom3DDataset):
                  test_mode=False,
                  eval_version='detection_cvpr_2019',
                  use_valid_flag=False):
+        self.AttrMapping = {
+        'cycle.with_rider': 0,
+        'cycle.without_rider': 1,
+        'pedestrian.moving': 2,
+        'pedestrian.standing': 3,
+        'pedestrian.sitting_lying_down': 4,
+        'vehicle.moving': 5,
+        'vehicle.parked': 6,
+        'vehicle.stopped': 7,
+        }
         self.load_interval = load_interval
         self.use_valid_flag = use_valid_flag
         super().__init__(
@@ -125,6 +138,7 @@ class NuScenesDataset(Custom3DDataset):
             box_type_3d=box_type_3d,
             filter_empty_gt=filter_empty_gt,
             test_mode=test_mode)
+        # import pdb; pdb.set_trace()
 
         self.with_velocity = with_velocity
         self.eval_version = eval_version
@@ -232,6 +246,7 @@ class NuScenesDataset(Custom3DDataset):
                 ))
 
         if not self.test_mode:
+            import pdb
             annos = self.get_ann_info(index)
             input_dict['ann_info'] = annos
 
@@ -260,12 +275,19 @@ class NuScenesDataset(Custom3DDataset):
         gt_bboxes_3d = info['gt_boxes'][mask]
         gt_names_3d = info['gt_names'][mask]
         gt_labels_3d = []
+        print("gt_labels_3d before: ")
+        print(self.CLASSES)
+        
         for cat in gt_names_3d:
             if cat in self.CLASSES:
+                print(cat)
                 gt_labels_3d.append(self.CLASSES.index(cat))
+
             else:
                 gt_labels_3d.append(-1)
         gt_labels_3d = np.array(gt_labels_3d)
+        print("gt_labels_3d after: ")
+        print(gt_labels_3d)
 
         if self.with_velocity:
             gt_velocity = info['gt_velocity'][mask]
@@ -275,7 +297,16 @@ class NuScenesDataset(Custom3DDataset):
 
         # Feng Xiang code
         # code begin
-        gt_attr_3d = info['gt_attr'][mask]
+        gt_attr_3d_name = info['gt_attr'][mask]
+        gt_attr_3d = []
+        for name in gt_attr_3d_name:
+          if name in self.AttrMapping.keys():
+            gt_attr_3d.append(self.AttrMapping[name])
+          else:
+            gt_attr_3d.append(-1)
+
+        gt_attr_3d = np.array(gt_attr_3d)
+
         # code end
 
         # the nuscenes box center is [0.5, 0.5, 0.5], we change it to be
@@ -293,10 +324,6 @@ class NuScenesDataset(Custom3DDataset):
             gt_names=gt_names_3d, 
             gt_attr_3d = gt_attr_3d)
         # code end
-
-        # TODO: add attribute information here
-        # TODO: add defaults for attributes and include in annotations
-        
         return anns_results
 
     def _format_bbox(self, results, jsonfile_prefix=None):
@@ -323,7 +350,7 @@ class NuScenesDataset(Custom3DDataset):
                                              mapped_class_names,
                                              self.eval_detection_configs,
                                              self.eval_version)
-            for i, box in enumerate(boxes): # TODO: is the results the ground truth or predictions from the model
+            for i, box in enumerate(boxes):
                 name = mapped_class_names[box.label]
                 if np.sqrt(box.velocity[0]**2 + box.velocity[1]**2) > 0.2:
                     if name in [
@@ -520,7 +547,7 @@ class NuScenesDataset(Custom3DDataset):
             points = Coord3DMode.convert_point(points, Coord3DMode.LIDAR,
                                                Coord3DMode.DEPTH)
             inds = result['pts_bbox']['scores_3d'] > 0.1
-            gt_bboxes = self.get_ann_info(i)['gt_bboxes_3d'].tensor
+            gt_bboxes = self.get_ann_info(i)['gt_bboxes_3d'].tensor.numpy()
             gt_bboxes = Box3DMode.convert(gt_bboxes, Box3DMode.LIDAR,
                                           Box3DMode.DEPTH)
             pred_bboxes = result['pts_bbox']['boxes_3d'][inds].tensor.numpy()
