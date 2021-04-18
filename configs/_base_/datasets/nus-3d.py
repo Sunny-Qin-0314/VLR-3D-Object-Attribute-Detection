@@ -6,6 +6,20 @@ class_names = [
     'car', 'truck', 'trailer', 'bus', 'construction_vehicle', 'bicycle',
     'motorcycle', 'pedestrian', 'traffic_cone', 'barrier'
 ]
+
+# Feng Xiang code
+# code begin
+attr_names = ['cycle.with_rider', 
+        'cycle.without_rider', 
+        'pedestrian.moving', 
+        'pedestrian.standing', 
+        'pedestrian.sitting_lying_down', 
+        'vehicle.moving', 
+        'vehicle.parked', 
+        'vehicle.stopped'
+        ]
+# code end
+
 dataset_type = 'NuScenesDataset'
 data_root = 'data/nuscenes/'
 # Input modality for nuScenes dataset, this is consistent with the submission
@@ -48,7 +62,7 @@ train_pipeline = [
     dict(type='ObjectRangeFilter', point_cloud_range=point_cloud_range),
     dict(type='ObjectNameFilter', classes=class_names),
     dict(type='PointShuffle'),
-    dict(type='DefaultFormatBundle3D', class_names=class_names),
+    dict(type='DefaultFormatBundle3D', class_names=class_names, attr_names=attr_names),
     dict(type='Collect3D', keys=['points', 'gt_bboxes_3d', 'gt_labels_3d', 'gt_attr_3d'])
 ]
 test_pipeline = [

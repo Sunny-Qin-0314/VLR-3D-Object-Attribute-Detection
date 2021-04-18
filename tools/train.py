@@ -176,7 +176,7 @@ def main():
         test_cfg=cfg.get('test_cfg'))
 
     logger.info(f'Model:\n{model}')
-    import pdb; pdb.set_trace()
+    # dataset is created
     datasets = [build_dataset(cfg.data.train)]
     if len(cfg.workflow) == 2:
         val_dataset = copy.deepcopy(cfg.data.val)

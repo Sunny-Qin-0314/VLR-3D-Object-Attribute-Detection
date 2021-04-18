@@ -170,6 +170,10 @@ class ObjectSample(object):
         """
         gt_bboxes_3d = input_dict['gt_bboxes_3d']
         gt_labels_3d = input_dict['gt_labels_3d']
+        # Feng Xiang code
+        # code begin
+        gt_attr_3d = input_dict['gt_attr_3d']
+        # code end
 
         # change to float for blending operation
         points = input_dict['points']
@@ -177,14 +181,15 @@ class ObjectSample(object):
             img = input_dict['img']
             gt_bboxes_2d = input_dict['gt_bboxes']
             # Assume for now 3D & 2D bboxes are the same
-            sampled_dict = self.db_sampler.sample_all(
+            sampled_dict = self.db_sampler.sample_all( 
                 gt_bboxes_3d.tensor.numpy(),
                 gt_labels_3d,
+                gt_attr_3d, 
                 gt_bboxes_2d=gt_bboxes_2d,
-                img=img)
+                img=img) # Feng Xiang added gt_attr_3d input
         else:
-            sampled_dict = self.db_sampler.sample_all(
-                gt_bboxes_3d.tensor.numpy(), gt_labels_3d, img=None)
+            sampled_dict = self.db_sampler.sample_all( 
+                gt_bboxes_3d.tensor.numpy(), gt_labels_3d, gt_attr_3d, img=None) # Feng Xiang added gt_attr_3d input
 
         if sampled_dict is not None:
             sampled_gt_bboxes_3d = sampled_dict['gt_bboxes_3d']
@@ -487,11 +492,14 @@ class ObjectRangeFilter(object):
         """
         gt_bboxes_3d = input_dict['gt_bboxes_3d']
         gt_labels_3d = input_dict['gt_labels_3d']
+        # Feng Xiang code
+        # code begin
         gt_attr_3d = input_dict['gt_attr_3d']
-        print("Length of GT Labels 3D")
-        print(len(gt_bboxes_3d))
-        print("Length of GT Attr 3D")
-        print(len(gt_attr_3d))
+        # print("Length of GT Labels 3D")
+        # print(len(gt_bboxes_3d))
+        # print("Length of GT Attr 3D")
+        # print(len(gt_attr_3d))
+        # code end
         mask = gt_bboxes_3d.in_range_bev(self.bev_range)
         gt_bboxes_3d = gt_bboxes_3d[mask]
         # mask is a torch tensor but gt_labels_3d is still numpy array
@@ -499,11 +507,15 @@ class ObjectRangeFilter(object):
         # len(gt_labels_3d) == 1, where mask=1 will be interpreted
         # as gt_labels_3d[1] and cause out of index error
         gt_labels_3d = gt_labels_3d[mask.numpy().astype(np.bool)]
+
+        # Feng Xiang code
+        # code begin
         # print("Ground Truth Attributes for Object Range Filter: ")
         # print(gt_attr_3d)
         # print("Ground Truth Mask for Object Range Filter: ")
         # print(mask.numpy().astype(np.bool))
         gt_attr_3d = gt_attr_3d[mask.numpy().astype(np.bool)]
+        # code end
 
         # limit rad to [-pi, pi]
         gt_bboxes_3d.limit_yaw(offset=0.5, period=2 * np.pi)
@@ -581,8 +593,10 @@ class ObjectNameFilter(object):
                                   dtype=np.bool_)
         input_dict['gt_bboxes_3d'] = input_dict['gt_bboxes_3d'][gt_bboxes_mask]
         input_dict['gt_labels_3d'] = input_dict['gt_labels_3d'][gt_bboxes_mask]
-        # Feng Xiang
+        # Feng Xiang code
+        # code begin
         input_dict['gt_attr_3d'] = input_dict['gt_attr_3d'][gt_bboxes_mask]
+        # code end
 
         return input_dict
 

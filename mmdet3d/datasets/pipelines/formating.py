@@ -28,7 +28,7 @@ class DefaultFormatBundle(object):
     """
 
     def __init__(self, ):
-        import pdb; pdb.set_trace()
+        #  gtimport pdb; pdb.set_trace()
         return
 
     def __call__(self, results):
@@ -142,7 +142,7 @@ class Collect3D(object):
                             'img_norm_cfg', 'rect', 'Trv2c', 'P2', 'pcd_trans',
                             'sample_idx', 'pcd_scale_factor', 'pcd_rotation',
                             'pts_filename', 'transformation_3d_flow')):
-        import pdb; pdb.set_trace()
+        # import pdb; pdb.set_trace()
         self.keys = keys
         self.meta_keys = meta_keys
 
@@ -168,9 +168,11 @@ class Collect3D(object):
         data['img_metas'] = DC(img_metas, cpu_only=True)
         for key in self.keys:
             data[key] = results[key]
-        
-        print("FENG XIANG DEBUG FORMATTING DATA")
-        print(data)
+        # Feng Xiang code
+        # code begin
+        # print("FENG XIANG DEBUG FORMATTING DATA")
+        # print(data)
+        # code end
         return data
 
     def __repr__(self):
@@ -195,10 +197,11 @@ class DefaultFormatBundle3D(DefaultFormatBundle):
     - gt_labels: (1)to tensor, (2)to DataContainer
     """
 
-    def __init__(self, class_names, with_gt=True, with_label=True):
-        import pdb; pdb.set_trace()
+    def __init__(self, class_names, with_gt=True, with_label=True, attr_names=None): # Feng Xiang - added attr_names input
+        # import pdb; pdb.set_trace()
         super(DefaultFormatBundle3D, self).__init__()
         self.class_names = class_names
+        self.attr_names = attr_names
         self.with_gt = with_gt
         self.with_label = with_label
 
@@ -221,55 +224,89 @@ class DefaultFormatBundle3D(DefaultFormatBundle):
             if key not in results:
                 continue
             results[key] = DC(to_tensor(results[key]), stack=False)
-        print("FENGXIANGRESULTSKEYS:LSDKJF:LKSDJF:LSDKJF")
-        print("Self With GT: " + str(self.with_gt)) # TRUE
-        print("Self with Label: " + str(self.with_label)) # FALSE
-        print(results.keys())
+        
+        # Feng Xiang begin
+        # code begin
+        # print("FENGXIANGRESULTSKEYS:LSDKJF:LKSDJF:LSDKJF")
+        # print("Self With GT: " + str(self.with_gt)) # TRUE
+        # print("Self with Label: " + str(self.with_label)) # FALSE
+        # print(results.keys())
+        # code end
         if self.with_gt:
+            # import pdb; pdb.set_trace()
             # Clean GT bboxes in the final
             if 'gt_bboxes_3d_mask' in results:
+                print("Formating - DefaultFormatBundle3D - gt_bboxes_3d_mask")
                 gt_bboxes_3d_mask = results['gt_bboxes_3d_mask']
                 results['gt_bboxes_3d'] = results['gt_bboxes_3d'][
                     gt_bboxes_3d_mask]
                 if 'gt_names_3d' in results:
                     results['gt_names_3d'] = results['gt_names_3d'][
                         gt_bboxes_3d_mask]
+                    # Feng Xiang code
+                    # code begin
+                    results['gt_attr_3d'] = results['gt_attr_3d'][gt_bboxes_3d_mask]
+                    # code end
                 if 'centers2d' in results:
                     results['centers2d'] = results['centers2d'][
                         gt_bboxes_3d_mask]
                 if 'depths' in results:
                     results['depths'] = results['depths'][gt_bboxes_3d_mask]
             if 'gt_bboxes_mask' in results:
+                print("Formatting - DefaultFormatBundle3D - gt_bboxes_mask")
                 gt_bboxes_mask = results['gt_bboxes_mask']
                 if 'gt_bboxes' in results:
                     results['gt_bboxes'] = results['gt_bboxes'][gt_bboxes_mask]
                 results['gt_names'] = results['gt_names'][gt_bboxes_mask]
+                # Feng Xiang code
+                # code begin
+                results['gt_attr'] = results['gt_attr'][gt_bboxes_mask]
+                # code end
             if self.with_label:
+                # print("Formatting - DefaultFormatBundle3D - self.with_label")
                 if 'gt_names' in results and len(results['gt_names']) == 0:
+                    print("Formatting - DefaultFormatBundle3D - self.with_label - gt_names and len")
                     results['gt_labels'] = np.array([], dtype=np.int64)
                     results['attr_labels'] = np.array([], dtype=np.int64)
+                    # Feng Xiang code
+                    # code begin
+                    results['gt_attr'] = np.array([], dtype=np.int64)
+                    # code end
                 elif 'gt_names' in results and isinstance(
                         results['gt_names'][0], list):
+                    print("Formatting - DefaultFormatBundle3D - self.with_label - gt_names and isinstance")
                     # gt_labels might be a list of list in multi-view setting
                     results['gt_labels'] = [
                         np.array([self.class_names.index(n) for n in res],
                                  dtype=np.int64) for res in results['gt_names']
                     ]
+                    # Feng Xiang code
+                    # code begin
+                    results['gt_attr'] = [np.array([self.attr_names.index(n) for n in res], dtype=np.int64) for res in results['gt_names']]
+                    # code end
                 elif 'gt_names' in results:
+                    print("Formatting - DefaultFormatBundle3D - self.with_label - gt_names only")
                     results['gt_labels'] = np.array([
                         self.class_names.index(n) for n in results['gt_names']
-                    ],
-                                                    dtype=np.int64)
+                    ], dtype=np.int64)
+                    results['gt_attr'] = np.array([
+                        self.attr_names.index(n) for n in results['gt_names']
+                    ], dtype=np.int64)
                 # we still assume one pipeline for one frame LiDAR
                 # thus, the 3D name is list[string]
                 
                 if 'gt_names_3d' in results:
-                    
+                    print("Formatting - DefaultFormatBundle3D - gt_names_3d")
                     results['gt_labels_3d'] = np.array([
                         self.class_names.index(n)
                         for n in results['gt_names_3d']
-                    ],
-                                                       dtype=np.int64)
+                    ], dtype=np.int64)
+                    results['gt_attr_3d'] = np.array([
+                        self.attr_names.index(n)
+                        for n in results['gt_names_3d']
+                    ], dtype=np.int64)
+
+
         results = super(DefaultFormatBundle3D, self).__call__(results)
 
         

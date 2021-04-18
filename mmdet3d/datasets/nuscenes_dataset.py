@@ -275,19 +275,25 @@ class NuScenesDataset(Custom3DDataset):
         gt_bboxes_3d = info['gt_boxes'][mask]
         gt_names_3d = info['gt_names'][mask]
         gt_labels_3d = []
-        print("gt_labels_3d before: ")
-        print(self.CLASSES)
+        # Feng Xiang code
+        # code begin
+        # print("gt_labels_3d before: ")
+        # print(self.CLASSES)
+        # code end
         
         for cat in gt_names_3d:
             if cat in self.CLASSES:
-                print(cat)
+                # print(cat)
                 gt_labels_3d.append(self.CLASSES.index(cat))
 
             else:
                 gt_labels_3d.append(-1)
         gt_labels_3d = np.array(gt_labels_3d)
-        print("gt_labels_3d after: ")
-        print(gt_labels_3d)
+        # Feng Xiang code
+        # code begin
+        # print("gt_labels_3d after: ")
+        # print(gt_labels_3d)
+        # code end
 
         if self.with_velocity:
             gt_velocity = info['gt_velocity'][mask]

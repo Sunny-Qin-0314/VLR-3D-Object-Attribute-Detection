@@ -13,6 +13,20 @@ class_names = [
     'motorcycle', 'bicycle', 'pedestrian', 'traffic_cone'
 ]
 
+# Feng Xiang code
+# code begin
+attr_names = ['cycle.with_rider', 
+        'cycle.without_rider', 
+        'pedestrian.moving', 
+        'pedestrian.standing', 
+        'pedestrian.sitting_lying_down', 
+        'vehicle.moving', 
+        'vehicle.parked', 
+        'vehicle.stopped'
+        ]
+# code end
+
+
 model = dict(
     pts_voxel_layer=dict(point_cloud_range=point_cloud_range),
     pts_voxel_encoder=dict(point_cloud_range=point_cloud_range),
@@ -43,6 +57,7 @@ db_sampler = dict(
             bicycle=5,
             pedestrian=5)),
     classes=class_names,
+    attr_classes=attr_names, # Feng Xiang added attr_classes input
     sample_groups=dict(
         car=2,
         truck=3,
@@ -91,7 +106,7 @@ train_pipeline = [
     dict(type='ObjectRangeFilter', point_cloud_range=point_cloud_range),
     dict(type='ObjectNameFilter', classes=class_names),
     dict(type='PointShuffle'),
-    dict(type='DefaultFormatBundle3D', class_names=class_names),
+    dict(type='DefaultFormatBundle3D', class_names=class_names, attr_names=attr_names),
     dict(type='Collect3D', keys=['points', 'gt_bboxes_3d', 'gt_labels_3d', 'gt_attr_3d'])
 ]
 test_pipeline = [

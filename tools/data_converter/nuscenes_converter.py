@@ -26,7 +26,7 @@ def create_nuscenes_infos(root_path,
                           info_prefix,
                           version='v1.0-trainval',
                           max_sweeps=10):
-    """Create info file of nuscene dataset.
+    """Create info file of nuscene dataset.x
 
     Given the raw data, generate its related info file in pkl format.
 

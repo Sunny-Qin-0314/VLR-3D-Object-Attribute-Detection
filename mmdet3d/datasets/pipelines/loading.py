@@ -542,9 +542,11 @@ class LoadAnnotations3D(LoadAnnotations):
         """
         # import pdb; pdb.set_trace()
         results['gt_labels_3d'] = results['ann_info']['gt_labels_3d']
+        # Feng Xiang code
+        # code begin
         results['gt_attr_3d'] = results['ann_info']['gt_attr_3d']
-        print("Loading Length of GT LABELS 3D")
-        print(len(results['gt_labels_3d']))
+        # print("Loading Length of GT LABELS 3D")
+        # print(len(results['gt_labels_3d']))
         
         # print("FENG XIANG LABELS 3D from LOADING")
         # print(len(results['gt_labels_3d']))
@@ -552,6 +554,7 @@ class LoadAnnotations3D(LoadAnnotations):
         # print("PRINTING LOADING GT ATTR 3D")
         # print(len(results['gt_attr_3d']))
         # print(results['gt_attr_3d'])
+        # code end
         return results
 
     def _load_attr_labels(self, results):
@@ -564,8 +567,11 @@ class LoadAnnotations3D(LoadAnnotations):
             dict: The dict containing loaded label annotations.
         """
         results['attr_labels'] = results['ann_info']['attr_labels']
-        print("ATTRIBUTE_LABELS")
-        print(results['attr_labels'])
+        # Feng Xiang code
+        # code begin
+        # print("ATTRIBUTE_LABELS")
+        # print(results['attr_labels'])
+        # code end
         return results
 
     def _load_masks_3d(self, results):

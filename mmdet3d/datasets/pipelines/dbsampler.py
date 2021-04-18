@@ -96,19 +96,22 @@ class DataBaseSampler(object):
                  data_root,
                  rate,
                  prepare,
-                 sample_groups,
-                 classes=None,
+                 sample_groups, 
+                 classes=None, 
+                 attr_classes=None, 
                  points_loader=dict(
                      type='LoadPointsFromFile',
                      coord_type='LIDAR',
                      load_dim=4,
-                     use_dim=[0, 1, 2, 3])):
+                     use_dim=[0, 1, 2, 3])): # Feng Xiang added attr_classes input
         super().__init__()
         self.data_root = data_root
         self.info_path = info_path
         self.rate = rate
         self.prepare = prepare
         self.classes = classes
+        self.attr_classes = attr_classes
+        print(self.attr_classes)
         self.cat2label = {name: i for i, name in enumerate(classes)}
         self.label2cat = {i: name for i, name in enumerate(classes)}
         self.points_loader = mmcv.build_from_cfg(points_loader, PIPELINES)
@@ -187,7 +190,7 @@ class DataBaseSampler(object):
                 db_infos[name] = filtered_infos
         return db_infos
 
-    def sample_all(self, gt_bboxes, gt_labels, img=None):
+    def sample_all(self, gt_bboxes, gt_labels, gt_attr, img=None): # included line for gt_attr
         """Sampling all categories of bboxes.
 
         Args:
@@ -262,6 +265,8 @@ class DataBaseSampler(object):
 
             gt_labels = np.array([self.cat2label[s['name']] for s in sampled],
                                  dtype=np.long)
+            # gt_attr = np.array([self.cat2])
+
             ret = {
                 'gt_labels_3d':
                 gt_labels,
