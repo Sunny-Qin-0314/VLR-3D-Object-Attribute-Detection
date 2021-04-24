@@ -117,6 +117,8 @@ class NuScenesDataset(Custom3DDataset):
                  test_mode=False,
                  eval_version='detection_cvpr_2019',
                  use_valid_flag=False):
+        # Feng Xiang code
+        # code begin
         self.AttrMapping = {
         'cycle.with_rider': 0,
         'cycle.without_rider': 1,
@@ -127,6 +129,27 @@ class NuScenesDataset(Custom3DDataset):
         'vehicle.parked': 6,
         'vehicle.stopped': 7,
         }
+        self.ATTR_CLASSES = ('cycle.with_rider',
+        'cycle.without_rider',
+        'pedestrian.moving',
+        'pedestrian.standing',
+        'pedestrian.sitting_lying_down',
+        'vehicle.moving',
+        'vehicle.parked',
+        'vehicle.stopped',)
+        self.Attr_To_Class = {
+        'cycle.with_rider': 'bicycle',
+        'cycle.without_rider': 'bicycle',
+        'pedestrian.moving': 'pedestrian',
+        'pedestrian.standing': 'pedestrian',
+        'pedestrian.sitting_lying_down': 'pedestrian',
+        'vehicle.moving': 'car',
+        'vehicle.parked': 'car',
+        'vehicle.stopped': 'car',
+        }
+
+        # code end
+
         self.load_interval = load_interval
         self.use_valid_flag = use_valid_flag
         super().__init__(
@@ -143,6 +166,10 @@ class NuScenesDataset(Custom3DDataset):
         self.with_velocity = with_velocity
         self.eval_version = eval_version
         from nuscenes.eval.detection.config import config_factory
+        # import pdb; pdb.set_trace()
+        # Feng Xiang
+        # detection_cvpr_2019 json file is located in
+        # /home/ubuntu/anaconda3/env/open-mmlab/lib/python3.7/site-packages/nuscenes/eval/detection
         self.eval_detection_configs = config_factory(self.eval_version)
         if self.modality is None:
             self.modality = dict(
@@ -246,7 +273,7 @@ class NuScenesDataset(Custom3DDataset):
                 ))
 
         if not self.test_mode:
-            import pdb
+            # import pdb
             annos = self.get_ann_info(index)
             input_dict['ann_info'] = annos
 
@@ -346,6 +373,11 @@ class NuScenesDataset(Custom3DDataset):
         """
         nusc_annos = {}
         mapped_class_names = self.CLASSES
+        # Feng Xiang code
+        # code begin
+        mapped_attr_class_names = self.ATTR_CLASSES
+
+        # code end
 
         print('Start to convert detection format...')
         for sample_id, det in enumerate(mmcv.track_iter_progress(results)):
@@ -353,11 +385,25 @@ class NuScenesDataset(Custom3DDataset):
             boxes = output_to_nusc_box(det)
             sample_token = self.data_infos[sample_id]['token']
             boxes = lidar_nusc_box_to_global(self.data_infos[sample_id], boxes,
-                                             mapped_class_names,
+                                             mapped_class_names, 
+                                             mapped_attr_class_names, 
                                              self.eval_detection_configs,
-                                             self.eval_version)
+                                             self.eval_version) # Feng Xiang added attr class name index
             for i, box in enumerate(boxes):
-                name = mapped_class_names[box.label]
+                # Feng Xiang code
+                # FORNOW: treat attribute labels (box.label > 9) as a classification
+                # this means that the function will create a bounding box for the attribute
+                # detections will be redundant, one for the classification (ex. car) and the other the attribute (ex. vehicle.moving)
+                # attributes for the attribute detections will also be redundant
+                # TODO: consider tying the attribute detections to the classification detections
+                # code begin
+                if box.label > 9:
+                    # import pdb; pdb.set_trace()
+                    attr_name = mapped_attr_class_names[box.label-10]
+                    name = self.Attr_To_Class[attr_name]
+                else:
+                    name = mapped_class_names[box.label]
+                # code end
                 if np.sqrt(box.velocity[0]**2 + box.velocity[1]**2) > 0.2:
                     if name in [
                             'car',
@@ -399,6 +445,7 @@ class NuScenesDataset(Custom3DDataset):
         res_path = osp.join(jsonfile_prefix, 'results_nusc.json')
         print('Results writes to', res_path)
         mmcv.dump(nusc_submissions, res_path)
+        import pdb; pdb.set_trace()
         return res_path
 
     def _evaluate_single(self,
@@ -469,6 +516,7 @@ class NuScenesDataset(Custom3DDataset):
                 directory created for saving json files when \
                 `jsonfile_prefix` is not specified.
         """
+        # import pdb; pdb.set_trace()
         assert isinstance(results, list), 'results must be a list'
         assert len(results) == len(self), (
             'The length of results is not equal to the dataset len: {} != {}'.
@@ -518,6 +566,7 @@ class NuScenesDataset(Custom3DDataset):
         Returns:
             dict[str, float]: Results of each evaluation metric.
         """
+        # import pdb; pdb.set_trace()
         result_files, tmp_dir = self.format_results(results, jsonfile_prefix)
 
         if isinstance(result_files, dict):
@@ -607,7 +656,8 @@ def output_to_nusc_box(detection):
 
 def lidar_nusc_box_to_global(info,
                              boxes,
-                             classes,
+                             classes, 
+                             attr_classes, 
                              eval_configs,
                              eval_version='detection_cvpr_2019'):
     """Convert the box from ego to global coordinate.
@@ -626,17 +676,48 @@ def lidar_nusc_box_to_global(info,
             coordinate.
     """
     box_list = []
+    count = 0
+    # Feng Xiang code
+    # code begin
+    # TODO: find the eval nuscenes detection cvpr 2019 json 
+    # FORNOW: hard code the class ranges for the attr classes
+    attr_cls_range_map = {
+        'cycle.with_rider': 40,
+        'cycle.without_rider': 40,
+        'pedestrian.moving': 40,
+        'pedestrian.standing': 40,
+        'pedestrian.sitting_lying_down': 40,
+        'vehicle.moving': 50,
+        'vehicle.parked': 50,
+        'vehicle.stopped': 50,
+    }
+    # code end
     for box in boxes:
+        count += 1
         # Move box to ego vehicle coord system
         box.rotate(pyquaternion.Quaternion(info['lidar2ego_rotation']))
         box.translate(np.array(info['lidar2ego_translation']))
         # filter det in ego.
+        # import pdb; pdb.set_trace()
         cls_range_map = eval_configs.class_range
         radius = np.linalg.norm(box.center[:2], 2)
-        det_range = cls_range_map[classes[box.label]]
+        # Feng Xiang code
+        # code begin
+        print("Count Number: ")
+        print(count)
+        print("Box Label: ")
+        print(box.label)
+        if box.label > 9:
+            # import pdb; pdb.set_trace()
+            det_range = attr_cls_range_map[attr_classes[box.label-10]]
+        else:
+            # if classes[box.label] >= len(cls_range_map):
+            #     import pdb; pdb.set_trace()
+            det_range = cls_range_map[classes[box.label]]
+        # code end
         if radius > det_range:
             continue
-        # Move box to global coord system
+        # Move box to global coord system 
         box.rotate(pyquaternion.Quaternion(info['ego2global_rotation']))
         box.translate(np.array(info['ego2global_translation']))
         box_list.append(box)

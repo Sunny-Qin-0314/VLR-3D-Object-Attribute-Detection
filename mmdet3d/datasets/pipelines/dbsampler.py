@@ -110,8 +110,13 @@ class DataBaseSampler(object):
         self.rate = rate
         self.prepare = prepare
         self.classes = classes
+        # Feng Xiang code
+        # code begin
         self.attr_classes = attr_classes
-        print(self.attr_classes)
+        # self.attr_cat2label = {name: i for i, name in enumerate(attr_classes)}
+        # self.attr_label2cat = {i: name for i, name in enumerate(attr_classes)}
+        # print(self.attr_classes)
+        # code end
         self.cat2label = {name: i for i, name in enumerate(classes)}
         self.label2cat = {i: name for i, name in enumerate(classes)}
         self.points_loader = mmcv.build_from_cfg(points_loader, PIPELINES)
@@ -135,11 +140,17 @@ class DataBaseSampler(object):
         # TODO: more elegant way to load sample groups
         self.sample_groups = []
         for name, num in sample_groups.items():
+            # import pdb; pdb.set_trace()
             self.sample_groups.append({name: int(num)})
 
         self.group_db_infos = self.db_infos  # just use db_infos
         self.sample_classes = []
+        # Feng Xiang code
+        # code begin
+        self.sample_attr_classes = []
+        # code end
         self.sample_max_nums = []
+        # import pdb; pdb.set_trace()
         for group_info in self.sample_groups:
             self.sample_classes += list(group_info.keys())
             self.sample_max_nums += list(group_info.values())
@@ -190,7 +201,7 @@ class DataBaseSampler(object):
                 db_infos[name] = filtered_infos
         return db_infos
 
-    def sample_all(self, gt_bboxes, gt_labels, gt_attr, img=None): # included line for gt_attr
+    def sample_all(self, gt_bboxes, gt_labels, gt_attr, img=None): # Feng Xiang included line for gt_attr
         """Sampling all categories of bboxes.
 
         Args:
@@ -216,6 +227,7 @@ class DataBaseSampler(object):
             #                   np.sum([n == class_name for n in gt_names]))
             sampled_num = int(max_sample_num -
                               np.sum([n == class_label for n in gt_labels]))
+            # import pdb; pdb.set_trace()
             sampled_num = np.round(self.rate * sampled_num).astype(np.int64)
             sampled_num_dict[class_name] = sampled_num
             sample_num_per_class.append(sampled_num)
@@ -227,6 +239,7 @@ class DataBaseSampler(object):
         for class_name, sampled_num in zip(self.sample_classes,
                                            sample_num_per_class):
             if sampled_num > 0:
+                # import pdb; pdb.set_trace()
                 sampled_cls = self.sample_class_v2(class_name, sampled_num,
                                                    avoid_coll_boxes)
 
@@ -265,11 +278,17 @@ class DataBaseSampler(object):
 
             gt_labels = np.array([self.cat2label[s['name']] for s in sampled],
                                  dtype=np.long)
-            # gt_attr = np.array([self.cat2])
+            # Feng Xiang code
+            # code begin
+            gt_attr_3d = np.array([s['gt_attr_3d'] for s in sampled], dtype=np.long)
+
+            # code end
 
             ret = {
                 'gt_labels_3d':
                 gt_labels,
+                'gt_attr_3d': 
+                gt_attr_3d, 
                 'gt_bboxes_3d':
                 sampled_gt_bboxes,
                 'points':
@@ -277,11 +296,11 @@ class DataBaseSampler(object):
                 'group_ids':
                 np.arange(gt_bboxes.shape[0],
                           gt_bboxes.shape[0] + len(sampled))
-            }
+            } # Feng Xiang added gt_attr_3d input
 
         return ret
 
-    def sample_class_v2(self, name, num, gt_bboxes):
+    def sample_class_v2(self, name, num, gt_bboxes): 
         """Sampling specific categories of bounding boxes.
 
         Args:
@@ -293,6 +312,7 @@ class DataBaseSampler(object):
             list[dict]: Valid samples after collision test.
         """
         sampled = self.sampler_dict[name].sample(num)
+        # import pdb; pdb.set_trace()
         sampled = copy.deepcopy(sampled)
         num_gt = gt_bboxes.shape[0]
         num_sampled = len(sampled)
@@ -317,5 +337,6 @@ class DataBaseSampler(object):
                 coll_mat[i] = False
                 coll_mat[:, i] = False
             else:
+                # import pdb; pdb.set_trace()
                 valid_samples.append(sampled[i - num_gt])
         return valid_samples

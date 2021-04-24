@@ -236,6 +236,7 @@ class DefaultFormatBundle3D(DefaultFormatBundle):
             # import pdb; pdb.set_trace()
             # Clean GT bboxes in the final
             if 'gt_bboxes_3d_mask' in results:
+                # import pdb; pdb.set_trace()
                 print("Formating - DefaultFormatBundle3D - gt_bboxes_3d_mask")
                 gt_bboxes_3d_mask = results['gt_bboxes_3d_mask']
                 results['gt_bboxes_3d'] = results['gt_bboxes_3d'][
@@ -252,7 +253,9 @@ class DefaultFormatBundle3D(DefaultFormatBundle):
                         gt_bboxes_3d_mask]
                 if 'depths' in results:
                     results['depths'] = results['depths'][gt_bboxes_3d_mask]
+                
             if 'gt_bboxes_mask' in results:
+                # import pdb; pdb.set_trace()
                 print("Formatting - DefaultFormatBundle3D - gt_bboxes_mask")
                 gt_bboxes_mask = results['gt_bboxes_mask']
                 if 'gt_bboxes' in results:
@@ -262,7 +265,9 @@ class DefaultFormatBundle3D(DefaultFormatBundle):
                 # code begin
                 results['gt_attr'] = results['gt_attr'][gt_bboxes_mask]
                 # code end
+                
             if self.with_label:
+                # import pdb; pdb.set_trace()
                 # print("Formatting - DefaultFormatBundle3D - self.with_label")
                 if 'gt_names' in results and len(results['gt_names']) == 0:
                     print("Formatting - DefaultFormatBundle3D - self.with_label - gt_names and len")
@@ -305,11 +310,17 @@ class DefaultFormatBundle3D(DefaultFormatBundle):
                         self.attr_names.index(n)
                         for n in results['gt_names_3d']
                     ], dtype=np.int64)
+                
 
 
         results = super(DefaultFormatBundle3D, self).__call__(results)
 
-        
+        lenLabels = int(len(results['gt_labels_3d']))
+        lenAttr = int(len(results['gt_attr_3d']))
+
+        if lenLabels != lenAttr:
+            import pdb; pdb.set_trace()
+
         return results
 
     def __repr__(self):

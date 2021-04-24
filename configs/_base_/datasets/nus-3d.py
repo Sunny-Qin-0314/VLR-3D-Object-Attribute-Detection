@@ -99,8 +99,8 @@ test_pipeline = [
 ]
 
 data = dict(
-    samples_per_gpu=1,
-    workers_per_gpu=4,
+    samples_per_gpu=1, # Feng Xiang default is 4
+    workers_per_gpu=0, # Feng Xiang default is 4 (set to 0 when debugging in call or other functions to avoid bdbQuit error)
     train=dict(
         type=dataset_type,
         data_root=data_root,
