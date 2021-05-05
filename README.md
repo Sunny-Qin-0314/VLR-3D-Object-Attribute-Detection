@@ -25,7 +25,7 @@ Untar the dataset files into the data/nuscenes directory.
 
 To create the dataset files, run the following command from the mmdetection3d directory:
 
-'''python tools/create_data.py nuscenes --root-path data/nuscenes --out-dir data/nuscenes --extra-tag nuscenes'''
+```python tools/create_data.py nuscenes --root-path data/nuscenes --out-dir data/nuscenes --extra-tag nuscenes```
 
 If the dataset is the NuScenes Mini dataset, create the dataset by running the following command from the mmdetection3d directory:
 
