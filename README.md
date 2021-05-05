@@ -29,19 +29,19 @@ To create the dataset files, run the following command from the mmdetection3d di
 
 If the dataset is the NuScenes Mini dataset, create the dataset by running the following command from the mmdetection3d directory:
 
-'python tools/create_data.py nuscenes --root-path data/nuscenes --out-dir data/nuscenes --extra-tag nuscenes --version='v1.0-mini'
+```python tools/create_data.py nuscenes --root-path data/nuscenes --out-dir data/nuscenes --extra-tag nuscenes --version='v1.0-mini'```
 
 To train the Centerpoint model (based on the Point Pillar backbone), run the following command from the mmdetection3d directory:
 
-'python tools/train.py configs/centerpoint/centerpoint_02pillar_second_secfpn_4x8_cyclic_20e_nus.py'
+```python tools/train.py configs/centerpoint/centerpoint_02pillar_second_secfpn_4x8_cyclic_20e_nus.py```
 
 To train the Centerpoint model with DCN and using pretrained weights, run the following command from the mmdetection3d directory:
 
-'python tools/train.py configs/centerpoint/centerpoint_02pillar_second_secfpn_dcn_4x8_cyclic_20e_nus.py --load-from ./demo/centerpoint_pointpillars_dcn.pth'
+```python tools/train.py configs/centerpoint/centerpoint_02pillar_second_secfpn_dcn_4x8_cyclic_20e_nus.py --load-from ./demo/centerpoint_pointpillars_dcn.pth```
 
 To test:
 
-'python tools/test.py configs/centerpoint/centerpoint_02pillar_second_secfpn_dcn_4x8_cyclic_20e_nus.py work_dirs/centerpoint_02pillar_second_secfpn_dcn_4x8_cyclic_20e_nus_mini_batch4/latest.pth --eval mAP'
+```python tools/test.py configs/centerpoint/centerpoint_02pillar_second_secfpn_dcn_4x8_cyclic_20e_nus.py work_dirs/centerpoint_02pillar_second_secfpn_dcn_4x8_cyclic_20e_nus_mini_batch4/latest.pth --eval mAP```
 
 
 ## References
