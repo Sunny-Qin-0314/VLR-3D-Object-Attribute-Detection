@@ -170,7 +170,13 @@ def _fill_trainval_infos(nusc,
         pose_record = nusc.get('ego_pose', sd_rec['ego_pose_token'])
         lidar_path, boxes, _ = nusc.get_sample_data(lidar_token)
 
-        mmcv.check_file_exist(lidar_path)
+        # Feng Xiang code
+        # code begin
+        try:
+            mmcv.check_file_exist(lidar_path)
+        except (FileNotFoundError, IOError):
+            continue
+        # code end
 
         info = {
             'lidar_path': lidar_path,

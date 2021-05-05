@@ -58,7 +58,6 @@ class Custom3DDataset(Dataset):
 
         self.CLASSES = self.get_classes(classes)
         self.cat2id = {name: i for i, name in enumerate(self.CLASSES)}
-        # import pdb; pdb.set_trace()
         self.data_infos = self.load_annotations(self.ann_file)
         # attributes can be seen in self.data_infos
 
@@ -95,7 +94,6 @@ class Custom3DDataset(Dataset):
                 - file_name (str): Filename of point clouds.
                 - ann_info (dict): Annotation info.
         """
-        import pdb; pdb.set_trace()
         info = self.data_infos[index]
         sample_idx = info['point_cloud']['lidar_idx']
         pts_filename = osp.join(self.data_root, info['pts_path'])
@@ -296,7 +294,6 @@ class Custom3DDataset(Dataset):
             return self.prepare_test_data(idx)
         while True:
             data = self.prepare_train_data(idx)
-            # import pdb; pdb.set_trace()
             if data is None:
                 idx = self._rand_another(idx)
                 continue

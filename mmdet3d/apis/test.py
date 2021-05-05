@@ -76,4 +76,7 @@ def single_gpu_test(model,
         batch_size = len(result)
         for _ in range(batch_size):
             prog_bar.update()
+    # Feng Xiang labels_3d has both classifications and attribute classes
+    # where to perform the cutting operation
+    # import pdb; pdb.set_trace()
     return results

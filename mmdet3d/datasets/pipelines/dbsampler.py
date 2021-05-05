@@ -78,6 +78,7 @@ class BatchSampler:
 
 @OBJECTSAMPLERS.register_module()
 class DataBaseSampler(object):
+    # sample on the attribute class to balance instead of the classification class
     """Class for sampling data from the ground truth database.
 
     Args:
@@ -140,7 +141,6 @@ class DataBaseSampler(object):
         # TODO: more elegant way to load sample groups
         self.sample_groups = []
         for name, num in sample_groups.items():
-            # import pdb; pdb.set_trace()
             self.sample_groups.append({name: int(num)})
 
         self.group_db_infos = self.db_infos  # just use db_infos
@@ -150,7 +150,6 @@ class DataBaseSampler(object):
         self.sample_attr_classes = []
         # code end
         self.sample_max_nums = []
-        # import pdb; pdb.set_trace()
         for group_info in self.sample_groups:
             self.sample_classes += list(group_info.keys())
             self.sample_max_nums += list(group_info.values())
@@ -227,7 +226,6 @@ class DataBaseSampler(object):
             #                   np.sum([n == class_name for n in gt_names]))
             sampled_num = int(max_sample_num -
                               np.sum([n == class_label for n in gt_labels]))
-            # import pdb; pdb.set_trace()
             sampled_num = np.round(self.rate * sampled_num).astype(np.int64)
             sampled_num_dict[class_name] = sampled_num
             sample_num_per_class.append(sampled_num)
@@ -239,7 +237,6 @@ class DataBaseSampler(object):
         for class_name, sampled_num in zip(self.sample_classes,
                                            sample_num_per_class):
             if sampled_num > 0:
-                # import pdb; pdb.set_trace()
                 sampled_cls = self.sample_class_v2(class_name, sampled_num,
                                                    avoid_coll_boxes)
 
@@ -312,7 +309,6 @@ class DataBaseSampler(object):
             list[dict]: Valid samples after collision test.
         """
         sampled = self.sampler_dict[name].sample(num)
-        # import pdb; pdb.set_trace()
         sampled = copy.deepcopy(sampled)
         num_gt = gt_bboxes.shape[0]
         num_sampled = len(sampled)
@@ -337,6 +333,5 @@ class DataBaseSampler(object):
                 coll_mat[i] = False
                 coll_mat[:, i] = False
             else:
-                # import pdb; pdb.set_trace()
                 valid_samples.append(sampled[i - num_gt])
         return valid_samples

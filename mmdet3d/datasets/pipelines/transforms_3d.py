@@ -197,7 +197,6 @@ class ObjectSample(object):
             sampled_gt_labels = sampled_dict['gt_labels_3d']
             sampled_gt_attr_3d = sampled_dict['gt_attr_3d']
 
-            import pdb; pdb.set_trace()
             gt_labels_3d = np.concatenate([gt_labels_3d, sampled_gt_labels],
                                           axis=0)
             gt_bboxes_3d = gt_bboxes_3d.new_box(
@@ -211,7 +210,6 @@ class ObjectSample(object):
             # check the points dimension
             points = points.cat([sampled_points, points])
 
-            import pdb; pdb.set_trace()
 
             if self.sample_2d:
                 sampled_gt_bboxes_2d = sampled_dict['gt_bboxes_2d']
@@ -228,8 +226,8 @@ class ObjectSample(object):
         input_dict['gt_attr_3d'] = gt_attr_3d.astype(np.long)
         # code end
         input_dict['points'] = points
+        # print(len(input_dict['gt_labels_3d']))
 
-        # import pdb; pdb.set_trace()
         return input_dict
 
     def __repr__(self):
@@ -535,12 +533,6 @@ class ObjectRangeFilter(object):
         input_dict['gt_labels_3d'] = gt_labels_3d
         input_dict['gt_attr_3d'] = gt_attr_3d
 
-        lenLabels = int(len(gt_labels_3d))
-        lenAttr = int(len(gt_attr_3d))
-
-        if lenAttr != lenLabels:
-            import pdb; pdb.set_trace()
-
         return input_dict
 
     def __repr__(self):
@@ -615,12 +607,6 @@ class ObjectNameFilter(object):
         # code begin
         input_dict['gt_attr_3d'] = input_dict['gt_attr_3d'][gt_bboxes_mask]
         # code end
-
-        lenLabels = int(len(input_dict['gt_labels_3d']))
-        lenDict = int(len(input_dict['gt_attr_3d']))
-
-        if lenLabels != lenDict:
-            import pdb; pdb.set_trace()
 
         return input_dict
 

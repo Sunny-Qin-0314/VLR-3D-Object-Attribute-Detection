@@ -540,7 +540,6 @@ class LoadAnnotations3D(LoadAnnotations):
         Returns:
             dict: The dict containing loaded label annotations.
         """
-        # import pdb; pdb.set_trace()
         results['gt_labels_3d'] = results['ann_info']['gt_labels_3d']
         # Feng Xiang code
         # code begin

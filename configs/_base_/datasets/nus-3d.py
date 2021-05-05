@@ -99,8 +99,8 @@ test_pipeline = [
 ]
 
 data = dict(
-    samples_per_gpu=1, # Feng Xiang default is 4
-    workers_per_gpu=0, # Feng Xiang default is 4 (set to 0 when debugging in call or other functions to avoid bdbQuit error)
+    samples_per_gpu=8, # Feng Xiang default is 4
+    workers_per_gpu=4, # Feng Xiang default is 4 (set to 0 when debugging in call or other functions to avoid bdbQuit error)
     train=dict(
         type=dataset_type,
         data_root=data_root,
@@ -134,4 +134,4 @@ data = dict(
 # Since the models are trained by 24 epochs by default, we set evaluation
 # interval to be 24. Please change the interval accordingly if you do not
 # use a default schedule.
-evaluation = dict(interval=24)
+evaluation = dict(interval=1) # Feng Xiang default is 24

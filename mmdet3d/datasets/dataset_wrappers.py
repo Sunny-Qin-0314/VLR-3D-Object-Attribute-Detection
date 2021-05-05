@@ -64,6 +64,7 @@ class CBGSDataset(object):
             dict: Data dictionary of the corresponding index.
         """
         ori_idx = self.sample_indices[idx]
+        # print(len(self.dataset[ori_idx]['gt_labels_3d']))
         return self.dataset[ori_idx]
 
     def __len__(self):

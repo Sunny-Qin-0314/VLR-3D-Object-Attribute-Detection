@@ -231,7 +231,6 @@ def create_groundtruth_database(dataset_class_name,
             info = coco.loadImgs([i])[0]
             file2id.update({info['file_name']: i})
 
-    # import pdb; pdb.set_trace()
     group_counter = 0
     for j in track_iter_progress(list(range(len(dataset)))):
         input_dict = dataset.get_data_info(j)

@@ -161,12 +161,10 @@ class NuScenesDataset(Custom3DDataset):
             box_type_3d=box_type_3d,
             filter_empty_gt=filter_empty_gt,
             test_mode=test_mode)
-        # import pdb; pdb.set_trace()
 
         self.with_velocity = with_velocity
         self.eval_version = eval_version
         from nuscenes.eval.detection.config import config_factory
-        # import pdb; pdb.set_trace()
         # Feng Xiang
         # detection_cvpr_2019 json file is located in
         # /home/ubuntu/anaconda3/env/open-mmlab/lib/python3.7/site-packages/nuscenes/eval/detection
@@ -273,7 +271,6 @@ class NuScenesDataset(Custom3DDataset):
                 ))
 
         if not self.test_mode:
-            # import pdb
             annos = self.get_ann_info(index)
             input_dict['ann_info'] = annos
 
@@ -397,34 +394,45 @@ class NuScenesDataset(Custom3DDataset):
                 # attributes for the attribute detections will also be redundant
                 # TODO: consider tying the attribute detections to the classification detections
                 # code begin
-                if box.label > 9:
-                    # import pdb; pdb.set_trace()
-                    attr_name = mapped_attr_class_names[box.label-10]
-                    name = self.Attr_To_Class[attr_name]
-                else:
-                    name = mapped_class_names[box.label]
-                # code end
-                if np.sqrt(box.velocity[0]**2 + box.velocity[1]**2) > 0.2:
-                    if name in [
-                            'car',
-                            'construction_vehicle',
-                            'bus',
-                            'truck',
-                            'trailer',
-                    ]:
-                        attr = 'vehicle.moving'
-                    elif name in ['bicycle', 'motorcycle']:
-                        attr = 'cycle.with_rider'
-                    else:
-                        attr = NuScenesDataset.DefaultAttribute[name]
-                else:
-                    if name in ['pedestrian']:
-                        attr = 'pedestrian.standing'
-                    elif name in ['bus']:
-                        attr = 'vehicle.stopped'
-                    else:
-                        attr = NuScenesDataset.DefaultAttribute[name]
 
+                # TODO: come back to later
+                # if box.label > 9:
+                #     attr_name = mapped_attr_class_names[box.label-10] # cycle with rider bicycle or motorcycle
+                #     name = self.Attr_To_Class[attr_name]
+                # else:
+                #     name = mapped_class_names[box.label]
+                # code end
+                if box.label <= 9: # Feng Xiang code
+                    name = mapped_class_names[box.label]
+                    if np.sqrt(box.velocity[0]**2 + box.velocity[1]**2) > 0.2:
+                        if name in [
+                                'car',
+                                'construction_vehicle',
+                                'bus',
+                                'truck',
+                                'trailer',
+                        ]:
+                            attr = 'vehicle.moving'
+                        elif name in ['bicycle', 'motorcycle']:
+                            attr = 'cycle.with_rider'
+                        else:
+                            attr = NuScenesDataset.DefaultAttribute[name]
+                    else:
+                        if name in ['pedestrian']:
+                            attr = 'pedestrian.standing'
+                        elif name in ['bus']:
+                            attr = 'vehicle.stopped'
+                        else:
+                            attr = NuScenesDataset.DefaultAttribute[name]
+                else:
+                    # Jingxiang + Feng Xiang + Yuqing Qin changed code block
+                    attr = mapped_attr_class_names[box.label-10]
+                    name = mapped_attr_class_names[box.label-10]
+                    # attr and name are the same thing
+
+                # TODO: change nuscenes/eval/common/loaders.py in the 
+                # nuscenes python package sample_box to add bbox for attributes
+                # only change from class box is the name
                 nusc_anno = dict(
                     sample_token=sample_token,
                     translation=box.center.tolist(),
@@ -433,7 +441,7 @@ class NuScenesDataset(Custom3DDataset):
                     velocity=box.velocity[:2].tolist(),
                     detection_name=name,
                     detection_score=box.score,
-                    attribute_name=attr)
+                    attribute_name=attr) # Feng Xiang
                 annos.append(nusc_anno)
             nusc_annos[sample_token] = annos
         nusc_submissions = {
@@ -445,7 +453,6 @@ class NuScenesDataset(Custom3DDataset):
         res_path = osp.join(jsonfile_prefix, 'results_nusc.json')
         print('Results writes to', res_path)
         mmcv.dump(nusc_submissions, res_path)
-        import pdb; pdb.set_trace()
         return res_path
 
     def _evaluate_single(self,
@@ -470,12 +477,15 @@ class NuScenesDataset(Custom3DDataset):
         from nuscenes.eval.detection.evaluate import NuScenesEval
 
         output_dir = osp.join(*osp.split(result_path)[:-1])
+        # convert attributes to detection names
+        # once added bboxes for attr_names, NuScenes will compute wth attributes in the same way as class detections
         nusc = NuScenes(
-            version=self.version, dataroot=self.data_root, verbose=False)
+            version=self.version, dataroot=self.data_root, verbose=False) # ground truth object
         eval_set_map = {
             'v1.0-mini': 'mini_val',
             'v1.0-trainval': 'val',
         }
+        # import pdb; pdb.set_trace()
         nusc_eval = NuScenesEval(
             nusc,
             config=self.eval_detection_configs,
@@ -497,6 +507,20 @@ class NuScenesDataset(Custom3DDataset):
                 val = float('{:.4f}'.format(v))
                 detail['{}/{}_{}'.format(metric_prefix, name, k)] = val
 
+        # TODO: loop through attribute names to get metrics
+        # self.ATTR_CLASSES
+        # import pdb; pdb.set_trace()
+
+        for attr in self.ATTR_CLASSES:
+            for k, v in metrics['label_aps'][attr].items():
+                val = float('{:.4f}'.format(v))
+                detail['{}/{}_AP_dist_{}'.format(metric_prefix, attr, k)] = val
+            for k, v in metrics['label_tp_errors'][attr].items():
+                val = float('{:.4f}'.format(v))
+                detail['{}/{}_{}'.format(metric_prefix, attr, k)] = val
+
+
+        # import pdb; pdb.set_trace()
         detail['{}/NDS'.format(metric_prefix)] = metrics['nd_score']
         detail['{}/mAP'.format(metric_prefix)] = metrics['mean_ap']
         return detail
@@ -516,7 +540,6 @@ class NuScenesDataset(Custom3DDataset):
                 directory created for saving json files when \
                 `jsonfile_prefix` is not specified.
         """
-        # import pdb; pdb.set_trace()
         assert isinstance(results, list), 'results must be a list'
         assert len(results) == len(self), (
             'The length of results is not equal to the dataset len: {} != {}'.
@@ -566,7 +589,6 @@ class NuScenesDataset(Custom3DDataset):
         Returns:
             dict[str, float]: Results of each evaluation metric.
         """
-        # import pdb; pdb.set_trace()
         result_files, tmp_dir = self.format_results(results, jsonfile_prefix)
 
         if isinstance(result_files, dict):
@@ -626,7 +648,8 @@ def output_to_nusc_box(detection):
     """
     box3d = detection['boxes_3d']
     scores = detection['scores_3d'].numpy()
-    labels = detection['labels_3d'].numpy()
+    labels = detection['labels_3d'].numpy() # 0 - 9 for classes, 0 -
+    # TODO: 
 
     box_gravity_center = box3d.gravity_center.numpy()
     box_dims = box3d.dims.numpy()
@@ -648,7 +671,7 @@ def output_to_nusc_box(detection):
             box_dims[i],
             quat,
             label=labels[i],
-            score=scores[i],
+            score=scores[i], 
             velocity=velocity)
         box_list.append(box)
     return box_list
@@ -698,21 +721,18 @@ def lidar_nusc_box_to_global(info,
         box.rotate(pyquaternion.Quaternion(info['lidar2ego_rotation']))
         box.translate(np.array(info['lidar2ego_translation']))
         # filter det in ego.
-        # import pdb; pdb.set_trace()
         cls_range_map = eval_configs.class_range
         radius = np.linalg.norm(box.center[:2], 2)
         # Feng Xiang code
         # code begin
-        print("Count Number: ")
-        print(count)
-        print("Box Label: ")
-        print(box.label)
+        # print("Count Number: ")
+        # print(count)
+        # print("Box Label: ")
+        # print(box.label)
         if box.label > 9:
-            # import pdb; pdb.set_trace()
             det_range = attr_cls_range_map[attr_classes[box.label-10]]
         else:
             # if classes[box.label] >= len(cls_range_map):
-            #     import pdb; pdb.set_trace()
             det_range = cls_range_map[classes[box.label]]
         # code end
         if radius > det_range:

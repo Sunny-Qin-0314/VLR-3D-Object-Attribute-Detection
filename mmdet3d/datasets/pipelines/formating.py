@@ -28,7 +28,6 @@ class DefaultFormatBundle(object):
     """
 
     def __init__(self, ):
-        #  gtimport pdb; pdb.set_trace()
         return
 
     def __call__(self, results):
@@ -41,7 +40,6 @@ class DefaultFormatBundle(object):
             dict: The result dict contains the data that is formatted with
                 default bundle.
         """
-        # import pdb; pdb.set_trace()
         if 'img' in results:
             if isinstance(results['img'], list):
                 # process multiple imgs in single frame
@@ -54,8 +52,8 @@ class DefaultFormatBundle(object):
         for key in [
                 'proposals', 'gt_bboxes', 'gt_bboxes_ignore', 'gt_labels',
                 'gt_labels_3d', 'attr_labels', 'pts_instance_mask',
-                'pts_semantic_mask', 'centers2d', 'depths'
-        ]:
+                'pts_semantic_mask', 'centers2d', 'depths', 'gt_attr_3d'
+        ]: # Feng Xiang added gt_attr_3d input
             if key not in results:
                 continue
             if isinstance(results[key], list):
@@ -142,7 +140,6 @@ class Collect3D(object):
                             'img_norm_cfg', 'rect', 'Trv2c', 'P2', 'pcd_trans',
                             'sample_idx', 'pcd_scale_factor', 'pcd_rotation',
                             'pts_filename', 'transformation_3d_flow')):
-        # import pdb; pdb.set_trace()
         self.keys = keys
         self.meta_keys = meta_keys
 
@@ -158,7 +155,6 @@ class Collect3D(object):
                 - keys in ``self.keys``
                 - ``img_metas``
         """
-        # import pdb; pdb.set_trace()
         data = {}
         img_metas = {}
         for key in self.meta_keys:
@@ -198,7 +194,6 @@ class DefaultFormatBundle3D(DefaultFormatBundle):
     """
 
     def __init__(self, class_names, with_gt=True, with_label=True, attr_names=None): # Feng Xiang - added attr_names input
-        # import pdb; pdb.set_trace()
         super(DefaultFormatBundle3D, self).__init__()
         self.class_names = class_names
         self.attr_names = attr_names
@@ -233,10 +228,8 @@ class DefaultFormatBundle3D(DefaultFormatBundle):
         # print(results.keys())
         # code end
         if self.with_gt:
-            # import pdb; pdb.set_trace()
             # Clean GT bboxes in the final
             if 'gt_bboxes_3d_mask' in results:
-                # import pdb; pdb.set_trace()
                 print("Formating - DefaultFormatBundle3D - gt_bboxes_3d_mask")
                 gt_bboxes_3d_mask = results['gt_bboxes_3d_mask']
                 results['gt_bboxes_3d'] = results['gt_bboxes_3d'][
@@ -255,7 +248,6 @@ class DefaultFormatBundle3D(DefaultFormatBundle):
                     results['depths'] = results['depths'][gt_bboxes_3d_mask]
                 
             if 'gt_bboxes_mask' in results:
-                # import pdb; pdb.set_trace()
                 print("Formatting - DefaultFormatBundle3D - gt_bboxes_mask")
                 gt_bboxes_mask = results['gt_bboxes_mask']
                 if 'gt_bboxes' in results:
@@ -267,7 +259,6 @@ class DefaultFormatBundle3D(DefaultFormatBundle):
                 # code end
                 
             if self.with_label:
-                # import pdb; pdb.set_trace()
                 # print("Formatting - DefaultFormatBundle3D - self.with_label")
                 if 'gt_names' in results and len(results['gt_names']) == 0:
                     print("Formatting - DefaultFormatBundle3D - self.with_label - gt_names and len")
@@ -315,16 +306,9 @@ class DefaultFormatBundle3D(DefaultFormatBundle):
 
         results = super(DefaultFormatBundle3D, self).__call__(results)
 
-        lenLabels = int(len(results['gt_labels_3d']))
-        lenAttr = int(len(results['gt_attr_3d']))
-
-        if lenLabels != lenAttr:
-            import pdb; pdb.set_trace()
-
         return results
 
     def __repr__(self):
-        # import pdb; pdb.set_trace()
         """str: Return a string that describes the module."""
         repr_str = self.__class__.__name__
         repr_str += f'(class_names={self.class_names}, '

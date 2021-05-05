@@ -75,7 +75,6 @@ def inference_detector(model, pcd):
     Returns:
         tuple: Predicted results and data from pipeline.
     """
-    import pdb; pdb.set_trace()
     cfg = model.cfg
     device = next(model.parameters()).device  # model device
     # build the data pipeline
@@ -221,7 +220,7 @@ def show_result_meshlab(data, result, out_dir, score_thr=0.0):
         show_bboxes = Box3DMode.convert(pred_bboxes, box_mode, Box3DMode.DEPTH)
     else:
         show_bboxes = deepcopy(pred_bboxes)
-    show_result(points, None, show_bboxes, out_dir, file_name, show=False)
+    show_result(points, None, show_bboxes, out_dir, file_name, show=True)
 
     if 'img' not in data.keys():
         return out_dir, file_name
