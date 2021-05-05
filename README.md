@@ -49,6 +49,8 @@ There exists a bash script to process the work_dir log.json file to output chara
 
 ```source nuscenes_logs.sh```
 
+The output is a .zip file in the same directory that you ran the said-command. Output and unzip the file to observe the loss and accuracies curves generated from the log.json files.
+
 
 ## References
 
