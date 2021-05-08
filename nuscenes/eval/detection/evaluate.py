@@ -89,7 +89,6 @@ class DetectionEval:
 
         # code end
 
-        # import pdb; pdb.set_trace()
         # Feng Xiang commented out
         # assert set(self.pred_boxes.sample_tokens) == set(self.gt_boxes.sample_tokens), \
         #     "Samples in split doesn't match samples in predictions."
@@ -97,6 +96,11 @@ class DetectionEval:
         # Add center distances.
         self.pred_boxes = add_center_dist(nusc, self.pred_boxes)
         self.gt_boxes = add_center_dist(nusc, self.gt_boxes)
+
+        # Feng Xiang code begin
+        # code begin
+        # TODO: filter through self.gt_boxes and cut out tokens that do not exist in 
+        # code end
 
         # Filter boxes (distance, points per box, etc.).
         if verbose:

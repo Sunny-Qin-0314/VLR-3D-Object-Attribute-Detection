@@ -31,9 +31,13 @@ def accumulate(gt_boxes: EvalBoxes,
     # Organize input and initialize accumulators.
     # ---------------------------------------------
 
-    # import pdb; pdb.set_trace()
     # Count the positives.
-    npos = len([1 for gt_box in gt_boxes.all if gt_box.detection_name == class_name])
+    # Feng Xiang code
+    # code begin
+    # npos = len([1 for gt_box in gt_boxes.all if gt_box.detection_name == class_name])
+    npos = len([1 for gt_box in gt_boxes.all if gt_box.detection_name == class_name and gt_box.sample_token in pred_boxes.sample_tokens])
+    # code end
+
     if verbose:
         print("Found {} GT of class {} out of {} total across {} samples.".
               format(npos, class_name, len(gt_boxes.all), len(gt_boxes.sample_tokens)))
